@@ -3,7 +3,7 @@ const exphbs = require("express-handlebars");
 const http = require("http");
 const io = require("socket.io");
 
-const ProductManager = require("./ProductManager");
+const ProductManager = require("../ProductManager");
 
 const productManagerInstance = new ProductManager();
 
@@ -18,31 +18,22 @@ app.use(express.static("public"));
 app.engine(
   "handlebars",
   exphbs.create({
-    defaultLayout: "index",
     extname: ".handlebars",
-    layoutsDir: __dirname + "/views/layouts",
-    partialsDir: __dirname + "/views/partials",
-  }).engine
-);
-
-app.engine(
-  "handlebars-realTimeProducts",
-  exphbs.create({
-    defaultLayout: "realTimeProducts",
-    extname: ".handlebars",
-    layoutsDir: __dirname + "/views",
-    partialsDir: __dirname + "/views/partials",
+    layoutsDir: __dirname + "/../views/layouts",
+    partialsDir: __dirname + "/../views/partials",
   }).engine
 );
 
 app.set("view engine", "handlebars");
 app.set("views", "./views/layouts");
 
-const productsRouter = require("./products");
-const cartRouter = require("./cart");
+const productsRouter = require("../routers/products");
+const cartRouter = require("../routers/cart");
+const viewsRouter = require("../routers/views.router");
 
 app.use("/api/products", productsRouter);
-app.use("/api/carts", cartRouter);
+app.use("/api/cart", cartRouter);
+app.use("/", viewsRouter); // Utilizamos el router de las vistas
 
 socketIO.on("connection", (socket) => {
   console.log("Nuevo cliente conectado");
@@ -56,18 +47,6 @@ socketIO.on("connection", (socket) => {
     console.log("Producto eliminado:", productId);
     socketIO.emit("productDeleted", productId);
   });
-});
-
-app.get("/", (req, res) => {
-  const products = productManagerInstance.getProducts();
-  res.render("index", { products });
-});
-
-app.get("/realTimeProducts", (req, res) => {
-  console.log("Accediendo a la ruta /realTimeProducts");
-
-  const products = productManagerInstance.getProducts();
-  res.render("realTimeProducts", { products });
 });
 
 server.listen(port, () => {

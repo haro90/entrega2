@@ -1,32 +1,49 @@
 <html>
   <head>
     <title>Lista de productos en tiempo real</title>
-
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <script>
-      var socket = io(); socket.on('productAdded', function(product) { var
-      listItem = document.createElement('li'); listItem.textContent =
-      product.title + ' - ' + product.price;
-      document.getElementById('productList').appendChild(listItem); });
-      socket.on('productDeleted', function(productId) { var listItem =
+      var socket = io(); socket.on("productAdded", function (product) { var
+      listItem = document.createElement("li"); listItem.textContent =
+      product.title + " - " + product.price; listItem.id = product.id; var
+      deleteButton = document.createElement("button"); deleteButton.textContent
+      = "Eliminar"; deleteButton.addEventListener("click", function () {
+      deleteProduct(product.id); }); listItem.appendChild(deleteButton);
+      document.getElementById("productList").appendChild(listItem); });
+      socket.on("productDeleted", function (productId) { var listItem =
       document.getElementById(productId);
       listItem.parentNode.removeChild(listItem); }); function addProduct() { var
-      title = document.getElementById('title').value; var price =
-      document.getElementById('price').value; socket.emit('addProduct', { title:
-      title, price: price }); document.getElementById('title').value = '';
-      document.getElementById('price').value = ''; } function
-      deleteProduct(productId) { socket.emit('deleteProduct', productId); }
+      title = document.getElementById("title").value; var price =
+      document.getElementById("price").value; socket.emit("addProduct", { title:
+      title, price: price }); document.getElementById("title").value = "";
+      document.getElementById("price").value = ""; } function
+      deleteProduct(productId) { socket.emit("deleteProduct", productId); }
+      function initializeProductList(products) { var productList =
+      document.getElementById("productList"); products.forEach(function
+      (product) { var listItem = document.createElement("li"); listItem.id =
+      product.id; listItem.textContent = product.title + " - " + product.price;
+      var deleteButton = document.createElement("button");
+      deleteButton.textContent = "Eliminar";
+      deleteButton.addEventListener("click", function () {
+      deleteProduct(product.id); }); listItem.appendChild(deleteButton);
+      productList.appendChild(listItem); }); } function
+      updateProductList(product) { var listItem =
+      document.getElementById(product.id); if (listItem) { listItem.textContent
+      = product.title + " - " + product.price; } else { listItem =
+      document.createElement("li"); listItem.id = product.id;
+      listItem.textContent = product.title + " - " + product.price; var
+      deleteButton = document.createElement("button"); deleteButton.textContent
+      = "Eliminar"; deleteButton.addEventListener("click", function () {
+      deleteProduct(product.id); }); listItem.appendChild(deleteButton);
+      document.getElementById("productList").appendChild(listItem); } }
+      fetch("/api/products") .then((response) => response.json())
+      .then((products) => initializeProductList(products)) .catch((error) =>
+      console.error("Error fetching products:", error));
     </script>
   </head>
   <body>
     <h1>Lista de productos en tiempo real</h1>
-    <ul id="productList">
-      {{#each products}}
-        <li id="{{id}}">{{title}}
-          -
-          {{price}}
-          <button onclick="deleteProduct('{{id}}')">Eliminar</button></li>
-      {{/each}}
-    </ul>
+    <ul id="productList"></ul>
 
     <h2>Agregar un nuevo producto:</h2>
     <form onsubmit="event.preventDefault(); addProduct();">
@@ -38,6 +55,5 @@
 
       <button type="submit">Agregar</button>
     </form>
-    <script src="/socket.io/socket.io.js"></script>
   </body>
 </html>

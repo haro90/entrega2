@@ -2,7 +2,6 @@ const express = require("express");
 const exphbs = require("express-handlebars");
 const http = require("http");
 const io = require("socket.io");
-
 const ProductManager = require("../ProductManager");
 
 const productManagerInstance = new ProductManager();
@@ -33,19 +32,21 @@ const viewsRouter = require("../routers/views.router");
 
 app.use("/api/products", productsRouter);
 app.use("/api/cart", cartRouter);
-app.use("/", viewsRouter); // Utilizamos el router de las vistas
+app.use("/", viewsRouter);
 
 socketIO.on("connection", (socket) => {
   console.log("Nuevo cliente conectado");
 
   socket.on("addProduct", (product) => {
     console.log("Producto agregado:", product);
-    socketIO.emit("productAdded", product);
+    const newProduct = productManagerInstance.addProduct(product);
+    socketIO.emit("productAdded", newProduct);
   });
 
   socket.on("deleteProduct", (productId) => {
     console.log("Producto eliminado:", productId);
-    socketIO.emit("productDeleted", productId);
+    const deletedProductId = productManagerInstance.deleteProduct(productId);
+    socketIO.emit("productDeleted", deletedProductId);
   });
 });
 

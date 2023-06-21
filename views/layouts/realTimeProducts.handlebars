@@ -14,9 +14,9 @@
       document.getElementById(productId);
       listItem.parentNode.removeChild(listItem); }); function addProduct() { var
       title = document.getElementById("title").value; var price =
-      document.getElementById("price").value; socket.emit("addProduct", { title:
-      title, price: price }); document.getElementById("title").value = "";
-      document.getElementById("price").value = ""; } function
+      document.getElementById("price").value; socket.emit("productAdded", {
+      title: title, price: price, }); document.getElementById("title").value =
+      ""; document.getElementById("price").value = ""; } function
       deleteProduct(productId) { socket.emit("deleteProduct", productId); }
       function initializeProductList(products) { var productList =
       document.getElementById("productList"); products.forEach(function
